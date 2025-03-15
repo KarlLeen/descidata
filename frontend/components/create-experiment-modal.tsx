@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,10 +10,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@/hooks/useWallet"
-import { Loader2, Wallet } from "lucide-react"
+import { Loader2, Wallet, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useProjects } from "@/contexts/project-context"
 import { useToast } from "@/components/ui/use-toast"
+import { ethers } from "ethers"
+import { Card, CardContent } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+
+interface KPI {
+  metric: string
+  target: string
+  current?: string
+}
+
+interface Milestone {
+  id: string
+  name: string
+  targetProgress: string
+  kpis: KPI[]
+  phaseId: string
+}
 
 interface CreateExperimentModalProps {
   isOpen: boolean
@@ -35,8 +52,81 @@ export function CreateExperimentModal({ isOpen, onClose }: CreateExperimentModal
     fundingType: "donation",
     fundingGoal: "",
     dataAccess: "public",
-    timeline: "",
   })
+  
+  const [milestones, setMilestones] = useState<Milestone[]>([
+    {
+      id: `ms-${Date.now()}`,
+      name: "",
+      targetProgress: "",
+      phaseId: "phase-1",
+      kpis: [{ metric: "", target: "" }]
+    }
+  ])
+  
+  const [phases, setPhases] = useState([
+    { id: "phase-1", name: "Phase 1" },
+    { id: "phase-2", name: "Phase 2" },
+    { id: "phase-3", name: "Phase 3" },
+  ])
+
+  // Add a new milestone
+  const addMilestone = useCallback(() => {
+    setMilestones(prev => [
+      ...prev,
+      {
+        id: `ms-${Date.now()}-${prev.length}`,
+        name: "",
+        targetProgress: "",
+        phaseId: "phase-1",
+        kpis: [{ metric: "", target: "" }]
+      }
+    ])
+  }, [])
+
+  // Remove a milestone
+  const removeMilestone = useCallback((index: number) => {
+    setMilestones(prev => prev.filter((_, i) => i !== index))
+  }, [])
+
+  // Add a KPI to a milestone
+  const addKPI = useCallback((milestoneIndex: number) => {
+    setMilestones(prev => {
+      const updated = [...prev]
+      updated[milestoneIndex].kpis.push({ metric: "", target: "" })
+      return updated
+    })
+  }, [])
+
+  // Remove a KPI from a milestone
+  const removeKPI = useCallback((milestoneIndex: number, kpiIndex: number) => {
+    setMilestones(prev => {
+      const updated = [...prev]
+      updated[milestoneIndex].kpis = updated[milestoneIndex].kpis.filter((_, i) => i !== kpiIndex)
+      return updated
+    })
+  }, [])
+
+  // Update milestone data
+  const updateMilestone = useCallback((index: number, field: keyof Milestone, value: string) => {
+    setMilestones(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }, [])
+
+  // Update KPI data
+  const updateKPI = useCallback((milestoneIndex: number, kpiIndex: number, field: keyof KPI, value: string) => {
+    setMilestones(prev => {
+      const updated = [...prev]
+      updated[milestoneIndex].kpis[kpiIndex] = { 
+        ...updated[milestoneIndex].kpis[kpiIndex], 
+        [field]: value 
+      }
+      return updated
+    })
+  }, [])
 
   const handleSubmit = async () => {
     if (!isConnected) {
@@ -45,7 +135,7 @@ export function CreateExperimentModal({ isOpen, onClose }: CreateExperimentModal
 
     setIsSubmitting(true)
     try {
-      // Create new project
+      // Create new project in the context
       const newProject = await addProject({
         title: formData.title,
         fundingGoal: Number(formData.fundingGoal),
@@ -60,10 +150,57 @@ export function CreateExperimentModal({ isOpen, onClose }: CreateExperimentModal
         dataUploads: [],
       })
 
+      // Create milestones in the smart contract
+      try {
+        // Get the provider and signer
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+        
+        // Get the contract address from environment variables
+        const contractAddress = process.env.NEXT_PUBLIC_EXPERIMENT_CONTRACT_ADDRESS || ''
+        if (!contractAddress) {
+          throw new Error("Contract address not found in environment variables")
+        }
+        
+        // Get the contract ABI
+        const contractABI = require("@/contracts/DeSciDataABI.json")
+        
+        // Create contract instance
+        const contract = new ethers.Contract(contractAddress, contractABI, signer)
+        
+        // Create each milestone in the contract
+        for (const milestone of milestones) {
+          if (!milestone.name || !milestone.targetProgress) continue
+          
+          // Format KPIs for the contract
+          const kpis = milestone.kpis.filter(kpi => kpi.metric && kpi.target).map(kpi => ({
+            metric: kpi.metric,
+            target: ethers.parseUnits(kpi.target, 0), // Convert to BigNumber
+            current: ethers.parseUnits("0", 0) // Initialize current to 0
+          }))
+          
+          // Call the contract to create the milestone
+          await contract.createMilestone(
+            milestone.id,
+            milestone.name,
+            ethers.parseUnits(milestone.targetProgress, 0),
+            kpis,
+            milestone.phaseId
+          )
+        }
+      } catch (contractError) {
+        console.error("Error creating milestones in contract:", contractError)
+        toast({
+          title: "Contract Error",
+          description: "Project created but failed to initialize milestones in the smart contract.",
+          variant: "destructive",
+        })
+      }
+
       // Show success message
       toast({
         title: "Project Created",
-        description: "Your new research project has been created successfully.",
+        description: "Your new research project has been created successfully with milestones.",
       })
 
       // Close modal and redirect to portfolio
@@ -185,14 +322,147 @@ export function CreateExperimentModal({ isOpen, onClose }: CreateExperimentModal
                   placeholder="Enter funding goal in $EDU"
                 />
               </div>
-              <div>
-                <Label htmlFor="timeline">Project Timeline</Label>
-                <Textarea
-                  id="timeline"
-                  value={formData.timeline}
-                  onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
-                  placeholder="Describe your project milestones and timeline"
-                />
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label className="text-lg font-semibold">Milestones</Label>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addMilestone}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Milestone
+                  </Button>
+                </div>
+                
+                <Accordion type="multiple" className="w-full">
+                  {milestones.map((milestone, milestoneIndex) => (
+                    <AccordionItem key={milestone.id} value={milestone.id} className="border rounded-md p-2 mb-4">
+                      <div className="flex justify-between items-center">
+                        <AccordionTrigger className="hover:no-underline">
+                          <span className="font-medium">
+                            {milestone.name || `Milestone ${milestoneIndex + 1}`}
+                          </span>
+                        </AccordionTrigger>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeMilestone(milestoneIndex)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <AccordionContent>
+                        <div className="space-y-3 pt-2">
+                          <div>
+                            <Label htmlFor={`milestone-name-${milestoneIndex}`}>Milestone Name</Label>
+                            <Input
+                              id={`milestone-name-${milestoneIndex}`}
+                              value={milestone.name}
+                              onChange={(e) => updateMilestone(milestoneIndex, 'name', e.target.value)}
+                              placeholder="Enter milestone name"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`milestone-progress-${milestoneIndex}`}>Target Progress (%)</Label>
+                            <Input
+                              id={`milestone-progress-${milestoneIndex}`}
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={milestone.targetProgress}
+                              onChange={(e) => updateMilestone(milestoneIndex, 'targetProgress', e.target.value)}
+                              placeholder="Enter target progress percentage"
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`milestone-phase-${milestoneIndex}`}>Phase</Label>
+                            <Select 
+                              value={milestone.phaseId} 
+                              onValueChange={(value) => updateMilestone(milestoneIndex, 'phaseId', value)}
+                            >
+                              <SelectTrigger id={`milestone-phase-${milestoneIndex}`} className="mt-1">
+                                <SelectValue placeholder="Select phase" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {phases.map(phase => (
+                                  <SelectItem key={phase.id} value={phase.id}>
+                                    {phase.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <Label>Key Performance Indicators (KPIs)</Label>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => addKPI(milestoneIndex)}
+                              >
+                                <Plus className="h-3 w-3 mr-1" /> Add KPI
+                              </Button>
+                            </div>
+                            
+                            {milestone.kpis.map((kpi, kpiIndex) => (
+                              <Card key={`kpi-${milestoneIndex}-${kpiIndex}`} className="p-2">
+                                <CardContent className="p-2 space-y-2">
+                                  <div className="flex justify-between items-center">
+                                    <Label className="font-medium">KPI {kpiIndex + 1}</Label>
+                                    <Button 
+                                      type="button" 
+                                      variant="ghost" 
+                                      size="sm" 
+                                      onClick={() => removeKPI(milestoneIndex, kpiIndex)}
+                                      className="text-destructive h-6 w-6 p-0"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <Label htmlFor={`kpi-metric-${milestoneIndex}-${kpiIndex}`} className="text-xs">Metric</Label>
+                                      <Input
+                                        id={`kpi-metric-${milestoneIndex}-${kpiIndex}`}
+                                        value={kpi.metric}
+                                        onChange={(e) => updateKPI(milestoneIndex, kpiIndex, 'metric', e.target.value)}
+                                        placeholder="e.g., User Count"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`kpi-target-${milestoneIndex}-${kpiIndex}`} className="text-xs">Target Value</Label>
+                                      <Input
+                                        id={`kpi-target-${milestoneIndex}-${kpiIndex}`}
+                                        type="number"
+                                        value={kpi.target}
+                                        onChange={(e) => updateKPI(milestoneIndex, kpiIndex, 'target', e.target.value)}
+                                        placeholder="e.g., 1000"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
             </div>
           )}

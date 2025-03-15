@@ -9,18 +9,18 @@ const DATA_NFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_DATA_NFT_CONTRACT_ADDR
 // 获取以太坊提供者
 export const getProvider = () => {
   if (typeof window !== "undefined" && window.ethereum) {
-    return new ethers.providers.Web3Provider(window.ethereum)
+    return new ethers.BrowserProvider(window.ethereum)
   }
 
   // 如果没有 MetaMask，使用公共 RPC
-  return new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.educhain.network")
+  return new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL || "https://rpc.educhain.network")
 }
 
 // 获取签名者（需要用户连接钱包）
 export const getSigner = async () => {
   const provider = getProvider()
 
-  if (provider instanceof ethers.providers.Web3Provider) {
+  if (provider instanceof ethers.BrowserProvider) {
     // 请求用户连接钱包
     await provider.send("eth_requestAccounts", [])
     return provider.getSigner()
@@ -46,8 +46,8 @@ export const experimentContract = {
         id: experimentId,
         title: experiment.title,
         description: experiment.description,
-        fundingGoal: ethers.utils.formatEther(experiment.fundingGoal),
-        fundingRaised: ethers.utils.formatEther(experiment.fundingRaised),
+        fundingGoal: ethers.formatEther(experiment.fundingGoal),
+        fundingRaised: ethers.formatEther(experiment.fundingRaised),
         status: experiment.status,
         author: experiment.author,
         contractAddress: EXPERIMENT_CONTRACT_ADDRESS,
@@ -68,8 +68,8 @@ export const experimentContract = {
       id,
       title: experiment.title,
       description: experiment.description,
-      fundingGoal: ethers.utils.formatEther(experiment.fundingGoal),
-      fundingRaised: ethers.utils.formatEther(experiment.fundingRaised),
+      fundingGoal: ethers.formatEther(experiment.fundingGoal),
+      fundingRaised: ethers.formatEther(experiment.fundingRaised),
       status: experiment.status,
       author: experiment.author,
       contractAddress: EXPERIMENT_CONTRACT_ADDRESS,
@@ -85,7 +85,7 @@ export const experimentContract = {
     const tx = await contract.createExperiment(
       data.title,
       data.description,
-      ethers.utils.parseEther(data.fundingGoal.toString()),
+      ethers.parseEther(data.fundingGoal.toString()),
       // 其他参数...
     )
 
@@ -99,7 +99,7 @@ export const experimentContract = {
     const contract = new ethers.Contract(EXPERIMENT_CONTRACT_ADDRESS as string, ExperimentABI, signer)
 
     const tx = await contract.fundExperiment(id, {
-      value: ethers.utils.parseEther(amount),
+      value: ethers.parseEther(amount),
     })
 
     await tx.wait()

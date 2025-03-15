@@ -130,6 +130,80 @@ export default function CrowdfundingPage() {
         </div>
       </section>
 
+      {/* Financial Policy Section */}
+      <section className="py-12 md:py-16 bg-secondary/30">
+        <div className="container px-4 md:px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold mb-4">DeSciData Financial Policy</h2>
+            <p className="text-muted-foreground md:text-lg max-w-[700px] mx-auto">
+              Our transparent financial policies ensure fair distribution of funds and sustainable growth.
+            </p>
+          </div>
+          
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="bg-card/60 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  Funding Guarantees
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border p-4 bg-background/50">
+                  <h3 className="font-medium mb-2">Full Refund Guarantee</h3>
+                  <p className="text-sm text-muted-foreground">
+                    All funds are returned to backers if a campaign fails to meet its minimum threshold within the deadline. Our smart contract ensures automatic refunds without any manual intervention.
+                  </p>
+                </div>
+                
+                <div className="rounded-lg border p-4 bg-background/50">
+                  <h3 className="font-medium mb-2">Platform Fee Structure</h3>
+                  <p className="text-sm text-muted-foreground">
+                    A 5% platform fee is deducted only from successfully funded projects, applied post-raise. For example, from a $100k raised campaign, $5k goes to platform maintenance, and $95k is allocated to research.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-card/60 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>
+                  </svg>
+                  Capital Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="rounded-lg border p-4 bg-background/50">
+                  <h3 className="font-medium mb-2">Low-Risk Investment</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Idle funds are pooled into SEC-compliant treasury bonds, generating a 2-4% annual yield. This ensures capital preservation while generating additional returns for all stakeholders.
+                  </p>
+                </div>
+                
+                <div className="rounded-lg border p-4 bg-background/50">
+                  <h3 className="font-medium mb-2">Quarterly Profit Distribution</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Yields are distributed quarterly with a transparent formula: 70% to researchers, 20% to sponsors, and 10% to platform reserves. All transactions are recorded on-chain for full financial transparency.
+                  </p>
+                  <div className="mt-3">
+                    <Progress value={70} className="h-2 mb-1" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>70% Researchers</span>
+                      <span>20% Sponsors</span>
+                      <span>10% Platform</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+      
       {/* Features Section */}
       <section className="py-12 md:py-16">
         <div className="container px-4 md:px-6">

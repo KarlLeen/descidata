@@ -34,6 +34,8 @@ This project consists of three main components:
 - Data NFT contracts
 - Citation tracking
 - Crowdfunding functionality
+- Milestone tracking with KPI management
+- Phase progress calculation
 
 ## Key Features
 
@@ -43,6 +45,46 @@ This project consists of three main components:
 - **Citation Tracking**: Track citations and usage of research data
 - **Crowdfunding Mechanism**: Raise funds for promising scientific projects
 - **Data Validation**: Ensure the integrity and authenticity of research data
+- **Financial Policy**: Transparent financial management with automated refunds and profit distribution
+- **Milestone Tracking**: Comprehensive tracking of project progress with KPIs and phase management
+- **Frontend Testing Framework**: Automated testing for all key frontend functionalities
+
+## Financial Policy
+
+DeSciData implements a transparent and fair financial policy to ensure sustainable growth and equitable distribution of resources:
+
+## Milestone Tracking System
+
+DeSciData features a comprehensive milestone tracking system that enables transparent monitoring of project progress:
+
+- **Three-Phase Structure**: Projects are organized into three main phases (Infrastructure & Core Features, Feature Extension, Ecosystem & Scalability)
+- **Nine Milestone Framework**: Each phase contains three detailed milestones with specific deliverables
+- **KPI Tracking**: Every milestone includes quantifiable Key Performance Indicators (KPIs) with target and current values
+- **Progress Calculation**: Automatic calculation of milestone and phase progress based on KPI achievements
+- **Role-Based Access**: Project managers can update milestone progress and KPI values
+
+## Testing Framework
+
+The platform includes a robust testing framework to ensure quality and reliability:
+
+- **Frontend Tests**: Comprehensive Cypress tests for all key frontend functionalities
+- **Mock Server**: A dedicated mock server for testing frontend components without backend dependencies
+- **Test Runner**: Interactive test runner with options for headless or browser-based testing
+- **Continuous Integration**: Tests can be integrated into CI/CD pipelines for automated quality assurance
+
+### Funding Mechanism
+- **Platform Fee**: A 5% fee is applied only to successfully funded projects
+- **Full Refund Guarantee**: All contributions are automatically refunded if funding goals are not met by the deadline
+- **Transparent Transactions**: All financial transactions are recorded on-chain for full transparency
+
+### Yield Management
+- **Low-Risk Investment**: Idle funds are pooled into SEC-compliant treasury bonds generating 2-4% annual yield
+- **Quarterly Profit Distribution**:
+  - 70% to researchers
+  - 20% to sponsors
+  - 10% to platform reserves
+
+For more details, see the [Financial Policy Documentation](./docs/FinancialPolicy.md).
 
 ## Getting Started
 
@@ -164,9 +206,10 @@ The project development is divided into three main phases, each containing quant
 ### Phase 3: Ecosystem & Scalability (6 weeks)
 
 #### Milestone 3.1: Crowdfunding System (2 weeks)
-- [ ] Implement smart contract crowdfunding functionality
+- [x] Implement smart contract crowdfunding functionality
+- [x] Implement transparent financial policy with refund mechanism
+- [x] Complete funds escrow and yield distribution system
 - [ ] Develop project evaluation mechanism
-- [ ] Complete funds escrow system
 
 #### Milestone 3.2: Data Validation Framework (2 weeks)
 - [ ] Implement automated data validation

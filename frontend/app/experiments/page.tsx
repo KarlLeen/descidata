@@ -149,7 +149,7 @@ function ExperimentCard({ experiment }: { experiment: any }) {
             ) : (
               <div className="text-sm text-success font-medium">已完成</div>
             )}
-            <div className="text-sm text-muted-foreground">作者: {experiment.author.name}</div>
+            <div className="text-sm text-muted-foreground">作者: {experiment.author?.name || '未知'}</div>
           </div>
           <div className="text-xs text-muted-foreground truncate">合约: {experiment.contractAddress}</div>
         </div>

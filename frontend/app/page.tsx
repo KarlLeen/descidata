@@ -344,7 +344,7 @@ function ProjectCard({ project }: { project: Project }) {
             <div className="text-sm text-muted-foreground">
               <span className="font-medium">{project.daysLeft}</span> days left
             </div>
-            <div className="text-sm text-muted-foreground">By {project.author.name}</div>
+            <div className="text-sm text-muted-foreground">By {project.author?.name || '未知'}</div>
           </div>
         </div>
       </CardContent>

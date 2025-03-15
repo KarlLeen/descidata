@@ -18,6 +18,12 @@ contract DeSciData is ERC721URIStorage, Ownable, ReentrancyGuard {
     Counters.Counter private _experimentIds;
     Counters.Counter private _datasetIds;
     
+    // Financial policy constants
+    uint256 public constant PLATFORM_FEE_PERCENT = 5; // 5% platform fee
+    uint256 public constant RESEARCHER_PROFIT_SHARE = 70; // 70% of profits to researchers
+    uint256 public constant SPONSOR_PROFIT_SHARE = 20; // 20% of profits to sponsors
+    uint256 public constant PLATFORM_RESERVE_SHARE = 10; // 10% to platform reserve
+    
     // Experiments
     struct Experiment {
         uint256 id;
@@ -64,6 +70,46 @@ contract DeSciData is ERC721URIStorage, Ownable, ReentrancyGuard {
     mapping(address => uint256[]) private researcherExperiments;
     mapping(address => uint256[]) private researcherDatasets;
     
+    // KPI structure
+    struct KPI {
+        string metric;
+        uint256 target;
+        uint256 current;
+    }
+
+    // Milestone structure
+    struct Milestone {
+        string id;
+        string name;
+        uint256 targetProgress;
+        uint256 currentProgress;
+        KPI[] kpis;
+        bool exists;
+    }
+
+    // Project management mappings
+    mapping(string => Milestone) private milestones;
+    mapping(string => string[]) private phaseMilestones;
+    mapping(address => bool) private projectManagers;
+    
+    // Financial management
+    uint256 private platformReserve;
+    uint256 private totalInvestedFunds;
+    uint256 private totalYield;
+    uint256 private lastDistributionTimestamp;
+    mapping(address => uint256) private researcherProfitShares;
+    mapping(address => uint256) private sponsorProfitShares;
+    
+    // Audit trail for financial transparency
+    struct FinancialTransaction {
+        uint256 timestamp;
+        string transactionType; // "fee", "investment", "yield", "distribution"
+        uint256 amount;
+        address recipient;
+        string description;
+    }
+    FinancialTransaction[] private financialTransactions;
+
     // Events
     event ExperimentCreated(uint256 indexed experimentId, address indexed researcher, string title);
     event FundingContributed(uint256 indexed experimentId, address indexed contributor, uint256 amount);
@@ -72,8 +118,17 @@ contract DeSciData is ERC721URIStorage, Ownable, ReentrancyGuard {
     event DatasetNFTized(uint256 indexed datasetId, address indexed owner);
     event DatasetCited(uint256 indexed citingDataset, uint256 indexed citedDataset, address indexed citer);
     event AccessGranted(uint256 indexed datasetId, address indexed user);
+    event MilestoneCreated(string indexed milestoneId, string name);
+    event MilestoneProgressUpdated(string indexed milestoneId, uint256 progress);
+    event MilestoneKPIUpdated(string indexed milestoneId, uint256 kpiIndex, uint256 value);
+    event PlatformFeeCollected(uint256 experimentId, uint256 amount);
+    event FundsRefunded(uint256 experimentId, address contributor, uint256 amount);
+    event YieldGenerated(uint256 amount, uint256 timestamp);
+    event ProfitDistributed(uint256 researcherAmount, uint256 sponsorAmount, uint256 platformAmount);
     
-    constructor() ERC721("DeSciData Dataset", "DSD") {}
+    constructor() ERC721("DeSciData Dataset", "DSD") {
+        projectManagers[msg.sender] = true;
+    }
     
     /**
      * @dev Create a new experiment
@@ -145,6 +200,80 @@ contract DeSciData is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
         
         emit FundingContributed(_experimentId, msg.sender, msg.value);
+    }
+    
+    /**
+     * @dev Process successful experiment funding
+     * @param _experimentId ID of the experiment
+     */
+    function processFundingSuccess(uint256 _experimentId) public nonReentrant {
+        Experiment storage experiment = experiments[_experimentId];
+        require(experiment.fundingComplete, "Funding goal not reached");
+        require(experiment.isActive, "Experiment is not active");
+        
+        // Calculate platform fee (5%)
+        uint256 platformFee = experiment.fundingRaised.mul(PLATFORM_FEE_PERCENT).div(100);
+        uint256 researchAmount = experiment.fundingRaised.sub(platformFee);
+        
+        // Add to platform reserve
+        platformReserve = platformReserve.add(platformFee);
+        
+        // Add to total invested funds for yield calculation
+        totalInvestedFunds = totalInvestedFunds.add(researchAmount);
+        
+        // Record transaction for audit trail
+        financialTransactions.push(FinancialTransaction({
+            timestamp: block.timestamp,
+            transactionType: "fee",
+            amount: platformFee,
+            recipient: address(this),
+            description: "Platform fee from experiment funding"
+        }));
+        
+        // Transfer research funds to researcher
+        payable(experiment.researcher).transfer(researchAmount);
+        
+        // Record transaction for audit trail
+        financialTransactions.push(FinancialTransaction({
+            timestamp: block.timestamp,
+            transactionType: "investment",
+            amount: researchAmount,
+            recipient: experiment.researcher,
+            description: "Research funding transferred to researcher"
+        }));
+        
+        emit PlatformFeeCollected(_experimentId, platformFee);
+    }
+    
+    /**
+     * @dev Refund contributions if experiment fails to meet funding goal
+     * @param _experimentId ID of the experiment
+     */
+    function refundContributions(uint256 _experimentId) public nonReentrant {
+        Experiment storage experiment = experiments[_experimentId];
+        require(experiment.isActive, "Experiment is not active");
+        require(block.timestamp > experiment.deadline, "Funding deadline has not passed");
+        require(!experiment.fundingComplete, "Funding goal was reached");
+        
+        uint256 contributionAmount = experiment.contributions[msg.sender];
+        require(contributionAmount > 0, "No contribution to refund");
+        
+        // Reset contribution
+        experiment.contributions[msg.sender] = 0;
+        
+        // Record transaction for audit trail
+        financialTransactions.push(FinancialTransaction({
+            timestamp: block.timestamp,
+            transactionType: "refund",
+            amount: contributionAmount,
+            recipient: msg.sender,
+            description: "Refund for failed experiment funding"
+        }));
+        
+        // Transfer refund
+        payable(msg.sender).transfer(contributionAmount);
+        
+        emit FundsRefunded(_experimentId, msg.sender, contributionAmount);
     }
     
     /**
@@ -449,5 +578,235 @@ contract DeSciData is ERC721URIStorage, Ownable, ReentrancyGuard {
         }
         
         return citingDatasets;
+    }
+
+    // Project management modifiers
+    modifier onlyProjectManager() {
+        require(projectManagers[msg.sender], "Not authorized");
+        _;
+    }
+
+    /**
+     * @dev Add a project manager
+     * @param _manager Address of the new project manager
+     */
+    function addProjectManager(address _manager) public onlyOwner {
+        projectManagers[_manager] = true;
+    }
+
+    /**
+     * @dev Remove a project manager
+     * @param _manager Address of the project manager to remove
+     */
+    function removeProjectManager(address _manager) public onlyOwner {
+        require(_manager != owner(), "Cannot remove owner");
+        projectManagers[_manager] = false;
+    }
+
+    /**
+     * @dev Create a new milestone and optionally add it to a phase
+     * @param _id Milestone ID
+     * @param _name Milestone name
+     * @param _targetProgress Target progress percentage
+     * @param _kpis Array of KPIs for the milestone
+     * @param _phaseId Optional phase ID to add the milestone to
+     */
+    function createMilestone(
+        string memory _id,
+        string memory _name,
+        uint256 _targetProgress,
+        KPI[] memory _kpis,
+        string memory _phaseId
+    ) public onlyProjectManager {
+        require(!milestones[_id].exists, "Milestone already exists");
+        require(_targetProgress <= 100, "Invalid target progress");
+
+        Milestone storage newMilestone = milestones[_id];
+        newMilestone.id = _id;
+        newMilestone.name = _name;
+        newMilestone.targetProgress = _targetProgress;
+        newMilestone.currentProgress = 0;
+        newMilestone.exists = true;
+
+        for (uint i = 0; i < _kpis.length; i++) {
+            newMilestone.kpis.push(KPI({
+                metric: _kpis[i].metric,
+                target: _kpis[i].target,
+                current: 0
+            }));
+        }
+
+        // Add milestone to phase if specified
+        if (bytes(_phaseId).length > 0) {
+            phaseMilestones[_phaseId].push(_id);
+        }
+
+        emit MilestoneCreated(_id, _name);
+    }
+
+    /**
+     * @dev Update milestone progress
+     * @param _milestoneId ID of the milestone
+     * @param _progress New progress value
+     */
+    function updateMilestoneProgress(
+        string memory _milestoneId,
+        uint256 _progress
+    ) public onlyProjectManager {
+        require(milestones[_milestoneId].exists, "Milestone does not exist");
+        require(_progress <= 100, "Invalid progress value");
+
+        milestones[_milestoneId].currentProgress = _progress;
+        emit MilestoneProgressUpdated(_milestoneId, _progress);
+    }
+
+    /**
+     * @dev Update milestone KPI
+     * @param _milestoneId ID of the milestone
+     * @param _kpiIndex Index of the KPI to update
+     * @param _value New KPI value
+     */
+    function updateMilestoneKPI(
+        string memory _milestoneId,
+        uint256 _kpiIndex,
+        uint256 _value
+    ) public onlyProjectManager {
+        require(milestones[_milestoneId].exists, "Milestone does not exist");
+        require(_kpiIndex < milestones[_milestoneId].kpis.length, "Invalid KPI index");
+        require(_value <= milestones[_milestoneId].kpis[_kpiIndex].target, "Value exceeds target");
+
+        milestones[_milestoneId].kpis[_kpiIndex].current = _value;
+        emit MilestoneKPIUpdated(_milestoneId, _kpiIndex, _value);
+    }
+
+    /**
+     * @dev Get milestone details
+     * @param _milestoneId ID of the milestone
+     */
+    function getMilestone(string memory _milestoneId) public view returns (Milestone memory) {
+        require(milestones[_milestoneId].exists, "Milestone does not exist");
+        return milestones[_milestoneId];
+    }
+
+    /**
+     * @dev Calculate phase progress
+     * @param _phaseId ID of the phase
+     */
+    function getPhaseProgress(string memory _phaseId) public view returns (uint256) {
+        string[] memory phaseMilestoneIds = phaseMilestones[_phaseId];
+        require(phaseMilestoneIds.length > 0, "Phase has no milestones");
+
+        uint256 totalProgress = 0;
+        for (uint i = 0; i < phaseMilestoneIds.length; i++) {
+            totalProgress += milestones[phaseMilestoneIds[i]].currentProgress;
+        }
+
+        return totalProgress / phaseMilestoneIds.length;
+    }
+    
+    /**
+     * @dev Simulate yield generation from treasury bonds (admin function)
+     * @param _yieldAmount Amount of yield generated
+     */
+    function recordYield(uint256 _yieldAmount) public onlyOwner {
+        totalYield = totalYield.add(_yieldAmount);
+        
+        // Record transaction for audit trail
+        financialTransactions.push(FinancialTransaction({
+            timestamp: block.timestamp,
+            transactionType: "yield",
+            amount: _yieldAmount,
+            recipient: address(this),
+            description: "Yield from treasury bonds"
+        }));
+        
+        emit YieldGenerated(_yieldAmount, block.timestamp);
+    }
+    
+    /**
+     * @dev Distribute profits quarterly
+     */
+    function distributeQuarterlyProfits() public onlyOwner {
+        require(totalYield > 0, "No yield to distribute");
+        require(block.timestamp >= lastDistributionTimestamp + 90 days, "Too early for distribution");
+        
+        uint256 researcherAmount = totalYield.mul(RESEARCHER_PROFIT_SHARE).div(100);
+        uint256 sponsorAmount = totalYield.mul(SPONSOR_PROFIT_SHARE).div(100);
+        uint256 platformAmount = totalYield.mul(PLATFORM_RESERVE_SHARE).div(100);
+        
+        // Update platform reserve
+        platformReserve = platformReserve.add(platformAmount);
+        
+        // Reset total yield for next quarter
+        totalYield = 0;
+        lastDistributionTimestamp = block.timestamp;
+        
+        // Record transaction for audit trail
+        financialTransactions.push(FinancialTransaction({
+            timestamp: block.timestamp,
+            transactionType: "distribution",
+            amount: researcherAmount.add(sponsorAmount).add(platformAmount),
+            recipient: address(this),
+            description: "Quarterly profit distribution"
+        }));
+        
+        emit ProfitDistributed(researcherAmount, sponsorAmount, platformAmount);
+    }
+    
+    /**
+     * @dev Get financial policy information
+     */
+    function getFinancialPolicy() public pure returns (
+        uint256 platformFeePercent,
+        uint256 researcherProfitShare,
+        uint256 sponsorProfitShare,
+        uint256 platformReserveShare
+    ) {
+        return (
+            PLATFORM_FEE_PERCENT,
+            RESEARCHER_PROFIT_SHARE,
+            SPONSOR_PROFIT_SHARE,
+            PLATFORM_RESERVE_SHARE
+        );
+    }
+    
+    /**
+     * @dev Get financial statistics
+     */
+    function getFinancialStats() public view returns (
+        uint256 reserve,
+        uint256 investedFunds,
+        uint256 currentYield,
+        uint256 lastDistribution
+    ) {
+        return (
+            platformReserve,
+            totalInvestedFunds,
+            totalYield,
+            lastDistributionTimestamp
+        );
+    }
+    
+    /**
+     * @dev Get financial transaction history (paginated)
+     * @param _offset Starting index
+     * @param _limit Maximum number of records to return
+     */
+    function getFinancialTransactions(uint256 _offset, uint256 _limit) public view returns (
+        FinancialTransaction[] memory transactions
+    ) {
+        uint256 endIndex = _offset.add(_limit);
+        if (endIndex > financialTransactions.length) {
+            endIndex = financialTransactions.length;
+        }
+        
+        uint256 resultLength = endIndex > _offset ? endIndex - _offset : 0;
+        transactions = new FinancialTransaction[](resultLength);
+        
+        for (uint256 i = 0; i < resultLength; i++) {
+            transactions[i] = financialTransactions[_offset + i];
+        }
+        
+        return transactions;
     }
 }

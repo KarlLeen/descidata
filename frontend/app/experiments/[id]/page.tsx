@@ -104,7 +104,7 @@ export default function ExperimentDetails({ params }: { params: { id: string } }
           </div>
 
           <div className="flex flex-wrap gap-4">
-            {experiment.researchers.map((researcher, index) => (
+            {experiment.researchers?.map((researcher, index) => (
               <Card key={index} className="flex items-center p-4 w-full md:w-auto">
                 <img
                   src={researcher.avatar || "/placeholder.svg"}
@@ -112,9 +112,9 @@ export default function ExperimentDetails({ params }: { params: { id: string } }
                   className="w-10 h-10 rounded-full mr-4"
                 />
                 <div>
-                  <h4 className="font-medium">{researcher.name}</h4>
-                  <p className="text-sm text-muted-foreground">{researcher.role}</p>
-                  <p className="text-xs text-muted-foreground">{researcher.institution}</p>
+                  <h4 className="font-medium">{researcher?.name || '未知'}</h4>
+                  <p className="text-sm text-muted-foreground">{researcher?.role || '未知职位'}</p>
+                  <p className="text-xs text-muted-foreground">{researcher?.institution || '未知机构'}</p>
                 </div>
               </Card>
             ))}
@@ -128,27 +128,27 @@ export default function ExperimentDetails({ params }: { params: { id: string } }
               <TabsTrigger value="requirements">Requirements</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="prose dark:prose-invert">
-              <div className="mt-4 whitespace-pre-wrap">{experiment.details.overview}</div>
+              <div className="mt-4 whitespace-pre-wrap">{experiment.details?.overview || '暂无概述信息'}</div>
             </TabsContent>
             <TabsContent value="methodology" className="prose dark:prose-invert">
-              <div className="mt-4 whitespace-pre-wrap">{experiment.details.methodology}</div>
+              <div className="mt-4 whitespace-pre-wrap">{experiment.details?.methodology || '暂无方法信息'}</div>
             </TabsContent>
             <TabsContent value="impact" className="prose dark:prose-invert">
-              <div className="mt-4 whitespace-pre-wrap">{experiment.details.impact}</div>
+              <div className="mt-4 whitespace-pre-wrap">{experiment.details?.impact || '暂无影响信息'}</div>
             </TabsContent>
             <TabsContent value="requirements">
               <div className="mt-4 space-y-4">
                 <div>
                   <h3 className="font-medium mb-2">Computational Requirements</h3>
-                  <p className="text-muted-foreground">{experiment.requirements.computation}</p>
+                  <p className="text-muted-foreground">{experiment.requirements?.computation || '暂无计算要求信息'}</p>
                 </div>
                 <div>
                   <h3 className="font-medium mb-2">Data Requirements</h3>
-                  <p className="text-muted-foreground">{experiment.requirements.data}</p>
+                  <p className="text-muted-foreground">{experiment.requirements?.data || '暂无数据要求信息'}</p>
                 </div>
                 <div>
                   <h3 className="font-medium mb-2">Timeline</h3>
-                  <p className="text-muted-foreground">{experiment.requirements.timeline}</p>
+                  <p className="text-muted-foreground">{experiment.requirements?.timeline || '暂无时间表信息'}</p>
                 </div>
               </div>
             </TabsContent>
@@ -176,7 +176,7 @@ export default function ExperimentDetails({ params }: { params: { id: string } }
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-medium">Base Price</span>
-                  <span className="text-xl font-bold">{experiment.accessPrice} $EDU</span>
+                  <span className="text-xl font-bold">{experiment.accessPrice || 0} $EDU</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   Per month of access. Purchase multiple months for longer access periods.
@@ -189,10 +189,10 @@ export default function ExperimentDetails({ params }: { params: { id: string } }
               <div className="pt-4 border-t space-y-2">
                 <h4 className="font-medium">Access Benefits:</h4>
                 <ul className="space-y-2">
-                  {experiment.benefits.map((benefit, index) => (
+                  {experiment.benefits?.map((benefit, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
                       <div className="h-2 w-2 rounded-full bg-primary mt-1.5" />
-                      <span>{benefit}</span>
+                      <span>{benefit || ''}</span>
                     </li>
                   ))}
                 </ul>

@@ -232,7 +232,7 @@ function DatasetCard({ dataset }: { dataset: Dataset }) {
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">By {dataset.author.name}</div>
+            <div className="text-sm text-muted-foreground">By {dataset.author?.name || '未知'}</div>
             <div className="text-sm text-muted-foreground">{dataset.dateUploaded}</div>
           </div>
           <div className="text-xs text-muted-foreground truncate">IPFS: {dataset.ipfsHash}</div>

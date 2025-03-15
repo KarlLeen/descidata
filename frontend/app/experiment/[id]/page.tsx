@@ -71,12 +71,12 @@ export default function ExperimentPage({ params }: { params: { id: string } }) {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={experiment.author.avatar} alt={experiment.author.name} />
-                  <AvatarFallback>{experiment.author.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={experiment.author?.avatar} alt={experiment.author?.name || '未知'} />
+                  <AvatarFallback>{experiment.author?.name?.charAt(0) || '?'}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="text-sm font-medium">{experiment.author.name}</div>
-                  <div className="text-xs text-muted-foreground">{experiment.author.institution}</div>
+                  <div className="text-sm font-medium">{experiment.author?.name || '未知'}</div>
+                  <div className="text-xs text-muted-foreground">{experiment.author?.institution || '未知机构'}</div>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
