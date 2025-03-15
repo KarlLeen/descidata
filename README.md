@@ -3,11 +3,11 @@
 [![GitHub license](https://img.shields.io/github/license/KarlLeen/descidata)](https://github.com/KarlLeen/descidata/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/KarlLeen/descidata)](https://github.com/KarlLeen/descidata/stargazers)
 
-DeSciData is an innovative blockchain-driven research data management and funding ecosystem designed to address data integrity, access, and funding issues in scientific research. The platform combines decentralized storage, smart contracts, and NFT technology to create a transparent, secure, and efficient environment for researchers.
+DeSciData is an innovative blockchain-driven research data management and funding ecosystem designed to address issues of data integrity, accessibility, and funding in scientific research. The platform integrates decentralized storage, smart contracts, and NFT technology to create a transparent, secure, and efficient environment for researchers.
 
 ## Project Overview
 
-DeSciData leverages blockchain technology and decentralized storage solutions to achieve:
+DeSciData leverages blockchain technology and decentralized storage solutions to enable:
 
 - Immutable and verifiable storage of research data
 - NFT minting of datasets for ownership and copyright protection
@@ -17,12 +17,12 @@ DeSciData leverages blockchain technology and decentralized storage solutions to
 
 ## Technical Architecture
 
-The project consists of three main components:
+This project consists of three main components:
 
 ### Frontend (Next.js + React)
 - Modern, responsive user interface
 - Blockchain wallet integration (MetaMask)
-- Experiment and dataset browsing and management
+- Exploration and management of experiments and datasets
 
 ### Backend (Node.js + Express + TypeScript)
 - RESTful API services
@@ -72,9 +72,8 @@ npm install
 ```
 
 3. Configure environment variables
-   
-Create the necessary environment variable files:
 
+Create the necessary environment variable files:
 **Backend (.env)**
 ```
 PORT=5001
@@ -111,14 +110,14 @@ Visit http://localhost:3000 to start using the application.
 
 ## Blockchain Integration
 
-DeSciData is currently deployed on the Sepolia testnet. You need to configure the Sepolia network in MetaMask and obtain test ETH.
+DeSciData is currently deployed on the Sepolia test network. You need to configure the Sepolia network in MetaMask and obtain test ETH.
 
-Current contract addresses:
+Current contract address:
 - Experiment Contract: `0xBd4d685D6DD1e88310bBa33041292050535E60ec`
 
 ## IPFS Integration
 
-DeSciData uses Pinata as the IPFS service provider to implement:
+DeSciData uses Pinata as the IPFS service provider to enable:
 - File uploads
 - Metadata storage
 - Content retrieval
@@ -221,3 +220,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 *DeSciData - Powering Decentralized Scientific Innovation*
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 295bb5bfb5c00ae2476c90860cefa51d3adad902
