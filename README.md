@@ -1,81 +1,81 @@
-# DeSciData - 去中心化科学数据平台
+# DeSciData - Decentralized Scientific Data Platform
 
 [![GitHub license](https://img.shields.io/github/license/KarlLeen/descidata)](https://github.com/KarlLeen/descidata/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/KarlLeen/descidata)](https://github.com/KarlLeen/descidata/stargazers)
 
-DeSciData是一个创新的区块链驱动的研究数据管理和融资生态系统，旨在解决科学研究中的数据完整性、获取和资金问题。平台将去中心化存储、智能合约和NFT技术结合，为研究人员创建一个透明、安全且高效的环境。
+DeSciData is an innovative blockchain-driven research data management and funding ecosystem designed to address data integrity, access, and funding issues in scientific research. The platform combines decentralized storage, smart contracts, and NFT technology to create a transparent, secure, and efficient environment for researchers.
 
-## 项目概述
+## Project Overview
 
-DeSciData通过区块链技术和去中心化存储解决方案，实现：
+DeSciData leverages blockchain technology and decentralized storage solutions to achieve:
 
-- 研究数据的不可变和可验证存储 
-- 数据集的NFT铸造，实现所有权和版权保护
-- 基于智能合约的研究项目众筹
-- 引文追踪和学术贡献认可
-- 研究成果的透明度和可验证性
+- Immutable and verifiable storage of research data
+- NFT minting of datasets for ownership and copyright protection
+- Smart contract-based crowdfunding for research projects
+- Citation tracking and recognition of academic contributions
+- Transparency and verifiability of research outcomes
 
-## 技术架构
+## Technical Architecture
 
-本项目由三个主要部分组成：
+The project consists of three main components:
 
-### 前端 (Next.js + React)
-- 现代化、响应式用户界面
-- 区块链钱包集成 (MetaMask)
-- 实验和数据集浏览与管理
+### Frontend (Next.js + React)
+- Modern, responsive user interface
+- Blockchain wallet integration (MetaMask)
+- Experiment and dataset browsing and management
 
-### 后端 (Node.js + Express + TypeScript)
-- RESTful API服务
-- 区块链交互服务
-- IPFS文件管理集成
+### Backend (Node.js + Express + TypeScript)
+- RESTful API services
+- Blockchain interaction services
+- IPFS file management integration
 
-### 智能合约 (Solidity)
-- 实验管理合约
-- 数据NFT合约
-- 引文跟踪
-- 众筹功能
+### Smart Contracts (Solidity)
+- Experiment management contracts
+- Data NFT contracts
+- Citation tracking
+- Crowdfunding functionality
 
-## 主要功能
+## Key Features
 
-- **实验管理**: 创建、更新和管理科学实验
-- **数据集管理**: 上传、存储和管理研究数据集
-- **NFT铸造**: 将数据集转换为NFT以保护知识产权
-- **引用追踪**: 追踪研究数据的引用和使用情况
-- **众筹机制**: 为有前景的科学项目筹集资金
-- **数据验证**: 确保研究数据的完整性和真实性
+- **Experiment Management**: Create, update, and manage scientific experiments
+- **Dataset Management**: Upload, store, and manage research datasets
+- **NFT Minting**: Convert datasets into NFTs to protect intellectual property
+- **Citation Tracking**: Track citations and usage of research data
+- **Crowdfunding Mechanism**: Raise funds for promising scientific projects
+- **Data Validation**: Ensure the integrity and authenticity of research data
 
-## 开始使用
+## Getting Started
 
-### 前提条件
+### Prerequisites
 
 - Node.js v16+
-- MetaMask浏览器扩展
-- Sepolia测试网络账户和ETH
+- MetaMask browser extension
+- Sepolia testnet account and ETH
 
-### 安装
+### Installation
 
-1. 克隆仓库
+1. Clone the repository
 ```bash
 git clone https://github.com/KarlLeen/descidata.git
 cd descidata
 ```
 
-2. 安装依赖
+2. Install dependencies
 ```bash
-# 后端依赖
+# Backend dependencies
 cd backend
 npm install
 
-# 前端依赖
+# Frontend dependencies
 cd ../frontend
 npm install
 ```
 
-3. 配置环境变量
+3. Configure environment variables
    
-创建必要的环境变量文件：
+Create the necessary environment variable files:
 
-**后端 (.env)**
+**Backend (.env)**
 ```
 PORT=5001
 NODE_ENV=development
@@ -88,7 +88,7 @@ PINATA_JWT=YOUR_PINATA_JWT
 FRONTEND_URL=http://localhost:3000
 ```
 
-**前端 (.env.local)**
+**Frontend (.env.local)**
 ```
 NEXT_PUBLIC_API_URL=http://localhost:5001
 NEXT_PUBLIC_EXPERIMENT_CONTRACT_ADDRESS=0xBd4d685D6DD1e88310bBa33041292050535E60ec
@@ -96,56 +96,128 @@ NEXT_PUBLIC_DATA_NFT_CONTRACT_ADDRESS=YOUR_NFT_CONTRACT_ADDRESS
 NEXT_PUBLIC_RPC_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
 ```
 
-4. 启动应用
+4. Start the application
 ```bash
-# 在一个终端窗口启动后端
+# Start the backend in one terminal window
 cd backend
 npm run dev
 
-# 在另一个终端窗口启动前端
+# Start the frontend in another terminal window
 cd frontend
 npm run dev
 ```
 
-访问 http://localhost:3000 开始使用应用程序。
+Visit http://localhost:3000 to start using the application.
 
-## 区块链集成
+## Blockchain Integration
 
-DeSciData目前部署在Sepolia测试网络上，您需要在MetaMask中配置Sepolia网络并获取测试ETH。
+DeSciData is currently deployed on the Sepolia testnet. You need to configure the Sepolia network in MetaMask and obtain test ETH.
 
-当前合约地址:
-- 实验合约: `0xBd4d685D6DD1e88310bBa33041292050535E60ec`
+Current contract addresses:
+- Experiment Contract: `0xBd4d685D6DD1e88310bBa33041292050535E60ec`
 
-## IPFS集成
+## IPFS Integration
 
-DeSciData使用Pinata作为IPFS服务提供商，实现：
-- 文件上传
-- 元数据存储
-- 内容检索
-- 网关URL生成
+DeSciData uses Pinata as the IPFS service provider to implement:
+- File uploads
+- Metadata storage
+- Content retrieval
+- Gateway URL generation
 
-## 开发计划
+## Development Plan
 
-- 全面的测试套件
-- 用户认证实现
-- 高级数据访问控制
-- 更细致的引文机制
-- 优化区块链交互方法
-- 更强大的错误处理
+The project development is divided into three main phases, each containing quantifiable milestone objectives:
 
-## 贡献
+### Phase 1: Infrastructure & Core Features (6 weeks)
 
-欢迎提交问题和拉取请求。大型更改请先开issue讨论。
+#### Milestone 1.1: User System & Authentication (2 weeks)
+- [ ] Implement Web3 wallet integration, supporting at least 3 mainstream wallets
+- [ ] Complete user profile system with researcher verification mechanism
+- [ ] Achieve 95% authentication process success rate
 
-## 许可证
+#### Milestone 1.2: Data Management Foundation (2 weeks)
+- [ ] Complete IPFS storage integration, supporting >100MB file uploads
+- [ ] Implement dataset metadata standardization, covering 10+ fields
+- [ ] Achieve 99% data upload success rate
 
-本项目基于MIT许可证 - 详情请见LICENSE文件。
+#### Milestone 1.3: Smart Contract Deployment (2 weeks)
+- [ ] Complete core contract testing with >90% test coverage
+- [ ] Complete security audit, resolving all high-risk vulnerabilities
+- [ ] Gas optimization, reducing transaction costs by 30%
 
-## 联系方式
+### Phase 2: Feature Extension & Optimization (8 weeks)
 
-- 项目维护者: [Karl Leen](https://github.com/KarlLeen)
-- 邮箱: example@example.com
+#### Milestone 2.1: NFT Functionality Implementation (3 weeks)
+- [ ] Implement dataset NFT minting functionality
+- [ ] Complete NFT marketplace development
+- [ ] Support at least 3 pricing models
+
+#### Milestone 2.2: Citation System (2 weeks)
+- [ ] Implement on-chain citation tracking
+- [ ] Develop citation verification mechanism
+- [ ] Achieve 99.9% citation accuracy
+
+#### Milestone 2.3: User Interface Optimization (3 weeks)
+- [ ] Implement responsive design, supporting all mainstream devices
+- [ ] Optimize loading speed, first screen loading <2s
+- [ ] Improve user experience score to 90+
+
+### Phase 3: Ecosystem & Scalability (6 weeks)
+
+#### Milestone 3.1: Crowdfunding System (2 weeks)
+- [ ] Implement smart contract crowdfunding functionality
+- [ ] Develop project evaluation mechanism
+- [ ] Complete funds escrow system
+
+#### Milestone 3.2: Data Validation Framework (2 weeks)
+- [ ] Implement automated data validation
+- [ ] Establish Peer Review system
+- [ ] Achieve 95% validation accuracy
+
+#### Milestone 3.3: API & Integration (2 weeks)
+- [ ] Publish REST API documentation
+- [ ] Provide SDK support
+- [ ] API response time <100ms
+
+## Progress Tracking
+
+We use Gantt charts for real-time progress tracking, integrated into the project management system:
+
+```typescript
+// frontend/components/GanttChart/types.ts
+export interface Milestone {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  progress: number;
+  dependencies?: string[];
+  kpis: {
+    metric: string;
+    target: number;
+    current: number;
+  }[];
+}
+
+// Implemented in frontend/components/GanttChart/index.tsx
+// Using react-gantt-chart to integrate project progress visualization
+```
+
+Visit `/dashboard/progress` to view real-time project progress. The progress of each milestone is automatically updated through smart contract events, ensuring transparency and immutability.
+
+## Contributing
+
+Contributions are welcome through issues and pull requests. For major changes, please open an issue first to discuss what you would like to change.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+- Project Maintainer: [Karl Leen](https://github.com/KarlLeen)
+- Email: limlamleen@gmail.com
 
 ---
 
-*DeSciData - 为去中心化科学创新提供动力*
+*DeSciData - Powering Decentralized Scientific Innovation*
